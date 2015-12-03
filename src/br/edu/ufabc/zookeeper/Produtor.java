@@ -56,7 +56,7 @@ public class Produtor implements Runnable, Watcher {
 				String noMaisVelho = Nos.maisVelho(nos);
 				System.out.println("O nó mais velho é " + noMaisVelho);
 				if (meuNo.endsWith(noMaisVelho)) {
-					System.err.println("Venci a eleição! Chegou minha vez :)");
+					System.out.println("Venci a eleição! Chegou minha vez :)");
 					souLider = true;
 				} else {
 					System.out.println("Ainda não foi dessa vez :(");
