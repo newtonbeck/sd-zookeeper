@@ -9,4 +9,8 @@ public class Nos {
 		return Collections.min(nos);
 	}
 
+	public static String maisNovo(List<String> nos) {
+		return Collections.max(nos);
+	}
+
 }

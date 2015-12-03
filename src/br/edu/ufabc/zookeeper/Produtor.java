@@ -64,7 +64,7 @@ public class Produtor implements Runnable, Watcher {
 				// Caso contrário envia o número para a fila
 				try {
 					String noDoNumero = zooKeeper.create("/queue/node", String.valueOf(numero).getBytes(),
-							Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
+							Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
 					System.out.println("O número " + numero + " foi enviado para a fila dentro do nó " + noDoNumero);
 				} catch (KeeperException | InterruptedException e) {
 					// TODO O que fazer?

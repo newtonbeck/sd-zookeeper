@@ -1,63 +1,79 @@
 package br.edu.ufabc.zookeeper;
 
 import java.util.List;
+import java.util.Random;
 
 import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.Watcher.Event.EventType;
 import org.apache.zookeeper.ZooDefs.Ids;
+
+import br.edu.ufabc.zookeeper.util.Nos;
+
+import org.apache.zookeeper.ZooKeeper;
 
 public class Consumidor implements Runnable, Watcher {
 
-	static Integer mutex = 0;
-	
-	public Consumidor() throws Exception {
-		ZooKeeper zk = new ZooKeeper("localhost", 3_000, this);
-		System.out.println("Consumidor criado...");
-	}
-	
 	public static void main(String[] args) throws Exception {
-		Consumidor consumidor = new Consumidor();
-		consumidor.run();
+		new Thread(new Consumidor()).start();
 	}
-	
+
+	private ZooKeeper zooKeeper;
+
+	public Consumidor() throws Exception {
+		// Conectar com o ZooKeeper
+		zooKeeper = new ZooKeeper("localhost", 3_000, this);
+
+		// Registra o watch da fila
+		zooKeeper.getChildren("/queue", true);
+	}
+
 	@Override
 	public void run() {
-		try {
-			ZooKeeper zk = new ZooKeeper("localhost", 3_000, this);
-			
-			byte[] lockNode;
-			System.out.println("Consumidor esperando por lock...");
-			
-			while(zk.exists("/lock", false) != null);
-			
-			synchronized(mutex) {
-				//Agora n�s temos o lock!
-				System.out.println("Consumidor adquiriu lock!");
-				
-				zk.create("/lock", new byte[0], Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
-				
-				byte[] bytes = zk.getData("/queue/node", true, null);
-				int decoded = Integer.parseInt(new String(bytes, "UTF-8")); 
-				processarInformacao(decoded);
-				
-				//Libera o diret�rio de lock
-				System.out.println("Consumidor liberando seu lock!");
-				zk.delete("/lock", -1);
-				mutex.notify();
-			}
-		} catch (Exception e) { 
-			e.printStackTrace();
+		while (true) {
+
 		}
 	}
-	
-	private void processarInformacao(int data) {
-		System.out.println("Consumidor recebeu: " + data + "!");
-	}
-	
+
 	@Override
 	public void process(WatchedEvent event) {
-		//Do nothing
+		if (EventType.NodeChildrenChanged == event.getType()) {
+			System.out.println("Um novo item foi inserido na fila");
+			try {
+				// Vai dormir antes de processar o nó
+				Thread.sleep(new Random().nextInt(3_000));
+
+				System.out.println("Tentado pegar o lock da fila...");
+
+				// Tenta pegar o lock
+				zooKeeper.create("/lock", new byte[0], Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+
+				System.out.println("Consegui o lock! :) Vamos trabalhar!");
+
+				List<String> nos = zooKeeper.getChildren("/queue", true);
+				String maisNovo = "/queue/" + Nos.maisNovo(nos);
+
+				System.out.println("O nó " + maisNovo + " será processado");
+
+				byte[] bytes = zooKeeper.getData(maisNovo, true, null);
+				int numero = Integer.parseInt(new String(bytes, "UTF-8"));
+				System.out.println("Recebi o número: " + numero);
+
+				Thread.sleep(3_000);
+
+				System.out.println("Estou liberando o lock");
+
+				// Libera o lock
+				zooKeeper.delete("/lock", -1);
+
+				System.out.println("Lock liberado com sucesso");
+			} catch (KeeperException e) {
+				System.out.println("Não consegui pegar o lock, não foi dessa vez :(");
+			} catch (Exception e) {
+				// TODO O que fazer?
+			}
+		}
 	}
 }
