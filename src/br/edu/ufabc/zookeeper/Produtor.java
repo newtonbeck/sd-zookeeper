@@ -25,7 +25,7 @@ public class Produtor implements Runnable, Watcher {
 
 	private String meuNo;
 
-	private boolean souLider;
+	private volatile boolean souLider;
 
 	public Produtor() throws Exception {
 		// Cria o leitor do teclado
