@@ -8,12 +8,10 @@ import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.Watcher.Event.EventType;
-import org.apache.zookeeper.Watcher.Event.KeeperState;
 import org.apache.zookeeper.ZooDefs.Ids;
+import org.apache.zookeeper.ZooKeeper;
 
 import br.edu.ufabc.zookeeper.util.Nos;
-
-import org.apache.zookeeper.ZooKeeper;
 
 public class Consumidor implements Runnable, Watcher {
 
