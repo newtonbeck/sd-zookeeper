@@ -1,6 +1,7 @@
 package br.edu.ufabc.zookeeper;
 
 import java.util.List;
+import java.util.Scanner;
 
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
@@ -18,6 +19,8 @@ public class Produtor implements Runnable, Watcher {
 		new Thread(new Produtor()).start();
 	}
 
+	private Scanner scanner;
+
 	private ZooKeeper zooKeeper;
 
 	private String meuNo;
@@ -25,6 +28,7 @@ public class Produtor implements Runnable, Watcher {
 	private boolean souLider;
 
 	public Produtor() throws Exception {
+		// Conectar com o ZooKeeper
 		zooKeeper = new ZooKeeper("localhost", 3_000, this);
 
 		// Cria seu nó para leader election
@@ -41,18 +45,25 @@ public class Produtor implements Runnable, Watcher {
 	@Override
 	public void run() {
 		while (true) {
+			if (souLider) {
 
+			}
 		}
 	}
 
 	@Override
 	public void process(WatchedEvent event) {
+		// Algum nó entrou ou saiu do grupo
 		if (EventType.NodeChildrenChanged == event.getType()) {
 			System.out.println("Iniciando a eleição...");
 			try {
 				// Espera até o nó antigo sair do diretório
 				Thread.sleep(3_000);
+
+				// Verifica quem está no grupo
 				List<String> nos = zooKeeper.getChildren("/leaders", true);
+
+				// O líder será o nó mais velho
 				String noMaisVelho = Nos.maisVelho(nos);
 				System.out.println("O nó mais velho é " + noMaisVelho);
 				if (meuNo.endsWith(noMaisVelho)) {
